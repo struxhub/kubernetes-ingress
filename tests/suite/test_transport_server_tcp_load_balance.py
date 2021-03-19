@@ -249,3 +249,83 @@ class TestTransportServerTcpLoadBalance:
             client.close()
 
         self.restore_ts(kube_apis, transport_server_setup)
+
+    @pytest.mark.sean
+    def test_tcp_request_load_balanced_method(
+            self, kube_apis, crd_ingress_controller, transport_server_setup, ingress_controller_prerequisites
+    ):
+        """
+        Requests to the load balanced TCP service should result in responses from 3 different endpoints.
+        """
+        # update load balance method - ip_hash
+        # test confirm that requests go to same ip
+        # change to least_conn and try again
+
+        patch_src = f"{TEST_DATA}/transport-server-tcp-load-balance/method-transport-server.yaml"
+        patch_ts(
+            kube_apis.custom_objects,
+            transport_server_setup.name,
+            patch_src,
+            transport_server_setup.namespace,
+        )
+        wait_before_test()
+
+        response = read_ts(
+            kube_apis.custom_objects,
+            transport_server_setup.namespace,
+            transport_server_setup.name,
+        )
+
+        print(response)
+
+        result_conf = get_ts_nginx_template_conf(
+            kube_apis.v1,
+            transport_server_setup.namespace,
+            transport_server_setup.name,
+            transport_server_setup.ingress_pod_name,
+            ingress_controller_prerequisites.namespace
+        )
+
+        # wait_before_test(60)
+
+        pattern = 'server .*;'
+        servers = re.findall(pattern, result_conf)
+        assert len(servers) is 3
+
+        port = transport_server_setup.public_endpoint.tcp_server_port
+        host = transport_server_setup.public_endpoint.public_ip
+
+        print(f"sending tcp requests to: {host}:{port}")
+
+        endpoints = {}
+        for i in range(20):
+            client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            client.connect((host, port))
+            response = client.recv(4096)
+            endpoint = response.decode()
+            print(f' req number {i}; response: {endpoint}')
+            if endpoint not in endpoints:
+                endpoints[endpoint] = 1
+            else:
+                endpoints[endpoint] = endpoints[endpoint] + 1
+            client.close()
+
+        assert len(endpoints) is 1
+
+        # result_conf = get_ts_nginx_template_conf(
+        #     kube_apis.v1,
+        #     transport_server_setup.namespace,
+        #     transport_server_setup.name,
+        #     transport_server_setup.ingress_pod_name,
+        #     ingress_controller_prerequisites.namespace
+        # )
+        #
+        # pattern = 'server .*;'
+        # servers = re.findall(pattern, result_conf)
+        # assert len(servers) is 3
+        # for key in endpoints.keys():
+        #     found = False
+        #     for server in servers:
+        #         if key in server:
+        #             found = True
+        #     assert found
