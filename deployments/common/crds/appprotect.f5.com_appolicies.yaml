@@ -3,7 +3,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.0
-  creationTimestamp: null
   name: appolicies.appprotect.f5.com
 spec:
   group: appprotect.f5.com
@@ -161,32 +160,36 @@ spec:
                                 type: string
                               name:
                                 enum:
-                                  - VIOL_PARAMETER_VALUE_BASE64
-                                  - VIOL_MANDATORY_HEADER
-                                  - VIOL_HEADER_REPEATED
                                   - VIOL_ASM_COOKIE_MODIFIED
                                   - VIOL_BLACKLISTED_IP
                                   - VIOL_COOKIE_EXPIRED
                                   - VIOL_COOKIE_LENGTH
                                   - VIOL_COOKIE_MALFORMED
                                   - VIOL_COOKIE_MODIFIED
+                                  - VIOL_CSRF
                                   - VIOL_DATA_GUARD
                                   - VIOL_ENCODING
                                   - VIOL_EVASION
-                                  - VIOL_FILETYPE
                                   - VIOL_FILE_UPLOAD
                                   - VIOL_FILE_UPLOAD_IN_BODY
+                                  - VIOL_FILETYPE
+                                  - VIOL_GRPC_FORMAT
+                                  - VIOL_GRPC_MALFORMED
+                                  - VIOL_GRPC_METHOD
                                   - VIOL_HEADER_LENGTH
                                   - VIOL_HEADER_METACHAR
+                                  - VIOL_HEADER_REPEATED
                                   - VIOL_HTTP_PROTOCOL
                                   - VIOL_HTTP_RESPONSE_STATUS
                                   - VIOL_JSON_FORMAT
                                   - VIOL_JSON_MALFORMED
                                   - VIOL_JSON_SCHEMA
+                                  - VIOL_MANDATORY_HEADER
                                   - VIOL_MANDATORY_PARAMETER
                                   - VIOL_MANDATORY_REQUEST_BODY
                                   - VIOL_METHOD
                                   - VIOL_PARAMETER
+                                  - VIOL_PARAMETER_ARRAY_VALUE
                                   - VIOL_PARAMETER_DATA_TYPE
                                   - VIOL_PARAMETER_EMPTY_VALUE
                                   - VIOL_PARAMETER_LOCATION
@@ -195,14 +198,16 @@ spec:
                                   - VIOL_PARAMETER_NUMERIC_VALUE
                                   - VIOL_PARAMETER_REPEATED
                                   - VIOL_PARAMETER_STATIC_VALUE
+                                  - VIOL_PARAMETER_VALUE_BASE64
                                   - VIOL_PARAMETER_VALUE_LENGTH
                                   - VIOL_PARAMETER_VALUE_METACHAR
+                                  - VIOL_PARAMETER_VALUE_REGEXP
                                   - VIOL_POST_DATA_LENGTH
                                   - VIOL_QUERY_STRING_LENGTH
-                                  - VIOL_RATING_THREAT
                                   - VIOL_RATING_NEED_EXAMINATION
-                                  - VIOL_REQUEST_MAX_LENGTH
+                                  - VIOL_RATING_THREAT
                                   - VIOL_REQUEST_LENGTH
+                                  - VIOL_REQUEST_MAX_LENGTH
                                   - VIOL_THREAT_CAMPAIGN
                                   - VIOL_URL
                                   - VIOL_URL_CONTENT_TYPE
@@ -238,8 +243,33 @@ spec:
                                   name:
                                     type: string
                                   scoreThreshold:
-                                    pattern: '[0-9]|[1-9][0-9]|1[0-4][0-9]|150|default'
+                                    anyOf:
+                                      - type: integer
+                                      - type: string
+                                    x-kubernetes-int-or-string: true
+                                type: object
+                              type: array
+                            browsers:
+                              items:
+                                properties:
+                                  $action:
+                                    enum:
+                                      - delete
                                     type: string
+                                  action:
+                                    enum:
+                                      - alarm
+                                      - block
+                                      - detect
+                                    type: string
+                                  maxVersion:
+                                    maximum: 2147483647
+                                    minimum: 0
+                                    type: integer
+                                  minVersion:
+                                    maximum: 2147483647
+                                    minimum: 0
+                                    type: integer
                                 type: object
                               type: array
                             classes:
@@ -254,6 +284,7 @@ spec:
                                     type: string
                                   name:
                                     enum:
+                                      - browser
                                       - malicious-bot
                                       - suspicious-browser
                                       - trusted-bot
@@ -282,6 +313,23 @@ spec:
                               type: boolean
                           type: object
                       type: object
+                    browser-definition:
+                      items:
+                        properties:
+                          $action:
+                            enum:
+                              - delete
+                            type: string
+                          isUserDefined:
+                            type: boolean
+                          matchRegex:
+                            type: string
+                          matchString:
+                            type: string
+                          name:
+                            type: string
+                        type: object
+                      type: array
                     caseInsensitive:
                       type: boolean
                     character-sets:
@@ -318,8 +366,10 @@ spec:
                     cookie-settings:
                       properties:
                         maximumCookieHeaderLength:
-                          pattern: any|\d+
-                          type: string
+                          anyOf:
+                            - type: integer
+                            - type: string
+                          x-kubernetes-int-or-string: true
                       type: object
                     cookieReference:
                       properties:
@@ -377,6 +427,42 @@ spec:
                               - explicit
                               - wildcard
                             type: string
+                          wildcardOrder:
+                            type: integer
+                        type: object
+                      type: array
+                    csrf-protection:
+                      properties:
+                        enabled:
+                          type: boolean
+                        expirationTimeInSeconds:
+                          pattern: disabled|\d+
+                          type: string
+                        sslOnly:
+                          type: boolean
+                      type: object
+                    csrf-urls:
+                      items:
+                        properties:
+                          $action:
+                            enum:
+                              - delete
+                            type: string
+                          enforcementAction:
+                            enum:
+                              - verify-origin
+                              - none
+                            type: string
+                          method:
+                            enum:
+                              - GET
+                              - POST
+                              - any
+                            type: string
+                          url:
+                            type: string
+                          wildcardOrder:
+                            type: integer
                         type: object
                       type: array
                     data-guard:
@@ -418,6 +504,26 @@ spec:
                         - transparent
                         - blocking
                       type: string
+                    enforcer-settings:
+                      properties:
+                        enforcerStateCookies:
+                          properties:
+                            httpOnlyAttribute:
+                              type: boolean
+                            sameSiteAttribute:
+                              enum:
+                                - lax
+                                - none
+                                - none-value
+                                - strict
+                              type: string
+                            secureAttribute:
+                              enum:
+                                - always
+                                - never
+                              type: string
+                          type: object
+                      type: object
                     filetypeReference:
                       properties:
                         link:
@@ -427,6 +533,8 @@ spec:
                     filetypes:
                       items:
                         properties:
+                          action:
+                            type: string
                           allowed:
                             type: boolean
                           checkPostDataLength:
@@ -453,6 +561,8 @@ spec:
                               - wildcard
                             type: string
                           urlLength:
+                            type: integer
+                          wildcardOrder:
                             type: integer
                         type: object
                       type: array
@@ -485,8 +595,10 @@ spec:
                     header-settings:
                       properties:
                         maximumHttpHeaderLength:
-                          pattern: any|\d+
-                          type: string
+                          anyOf:
+                            - type: integer
+                            - type: string
+                          x-kubernetes-int-or-string: true
                       type: object
                     headerReference:
                       properties:
@@ -503,6 +615,8 @@ spec:
                     headers:
                       items:
                         properties:
+                          allowRepeatedOccurrences:
+                            type: boolean
                           base64Decoding:
                             type: boolean
                           checkSignatures:
@@ -525,6 +639,19 @@ spec:
                             type: boolean
                           percentDecoding:
                             type: boolean
+                          signatureOverrides:
+                            items:
+                              properties:
+                                enabled:
+                                  type: boolean
+                                name:
+                                  type: string
+                                signatureId:
+                                  type: integer
+                                tag:
+                                  type: string
+                              type: object
+                            type: array
                           type:
                             enum:
                               - explicit
@@ -532,6 +659,21 @@ spec:
                             type: string
                           urlNormalization:
                             type: boolean
+                          wildcardOrder:
+                            type: integer
+                        type: object
+                      type: array
+                    host-names:
+                      items:
+                        properties:
+                          $action:
+                            enum:
+                              - delete
+                            type: string
+                          includeSubdomains:
+                            type: boolean
+                          name:
+                            type: string
                         type: object
                       type: array
                     json-profiles:
@@ -542,22 +684,32 @@ spec:
                           defenseAttributes:
                             properties:
                               maximumArrayLength:
-                                pattern: any|\d+
-                                type: string
+                                anyOf:
+                                  - type: integer
+                                  - type: string
+                                x-kubernetes-int-or-string: true
                               maximumStructureDepth:
-                                pattern: any|\d+
-                                type: string
+                                anyOf:
+                                  - type: integer
+                                  - type: string
+                                x-kubernetes-int-or-string: true
                               maximumTotalLengthOfJSONData:
-                                pattern: any|\d+
-                                type: string
+                                anyOf:
+                                  - type: integer
+                                  - type: string
+                                x-kubernetes-int-or-string: true
                               maximumValueLength:
-                                pattern: any|\d+
-                                type: string
+                                anyOf:
+                                  - type: integer
+                                  - type: string
+                                x-kubernetes-int-or-string: true
                               tolerateJSONParsingWarnings:
                                 type: boolean
                             type: object
                           description:
                             type: string
+                          handleJsonValuesAsParameters:
+                            type: boolean
                           hasValidationFiles:
                             type: boolean
                           metacharOverrides:
@@ -636,6 +788,8 @@ spec:
                     methods:
                       items:
                         properties:
+                          action:
+                            type: string
                           name:
                             type: string
                         type: object
@@ -719,6 +873,8 @@ spec:
                             type: boolean
                           exclusiveMin:
                             type: boolean
+                          isBase64:
+                            type: boolean
                           isCookie:
                             type: boolean
                           isHeader:
@@ -728,11 +884,19 @@ spec:
                               - global
                               - url
                             type: string
+                          mandatory:
+                            type: boolean
                           maximumLength:
+                            type: integer
+                          maximumValue:
                             type: integer
                           metacharsOnParameterValueCheck:
                             type: boolean
                           minimumLength:
+                            type: integer
+                          minimumValue:
+                            type: integer
+                          multipleOf:
                             type: integer
                           name:
                             type: string
@@ -784,6 +948,8 @@ spec:
                               - explicit
                               - wildcard
                             type: string
+                          url:
+                            type: object
                           valueMetacharOverrides:
                             items:
                               properties:
@@ -807,6 +973,8 @@ spec:
                               - user-input
                               - xml
                             type: string
+                          wildcardOrder:
+                            type: integer
                         type: object
                       type: array
                     response-pages:
@@ -967,6 +1135,12 @@ spec:
                     signature-requirements:
                       items:
                         properties:
+                          maxRevisionDatetime:
+                            format: date-time
+                            type: string
+                          minRevisionDatetime:
+                            format: date-time
+                            type: string
                           tag:
                             type: string
                         type: object
@@ -1060,12 +1234,51 @@ spec:
                     urls:
                       items:
                         properties:
+                          $action:
+                            enum:
+                              - delete
+                            type: string
                           attackSignaturesCheck:
                             type: boolean
                           description:
                             type: string
                           disallowFileUploadOfExecutables:
                             type: boolean
+                          html5CrossOriginRequestsEnforcement:
+                            properties:
+                              allowOriginsEnforcementMode:
+                                enum:
+                                  - replace-with
+                                  - unmodified
+                                type: string
+                              checkAllowedMethods:
+                                type: boolean
+                              crossDomainAllowedOrigin:
+                                items:
+                                  properties:
+                                    includeSubDomains:
+                                      type: boolean
+                                    originName:
+                                      type: string
+                                    originPort:
+                                      anyOf:
+                                        - type: integer
+                                        - type: string
+                                      x-kubernetes-int-or-string: true
+                                    originProtocol:
+                                      enum:
+                                        - http
+                                        - http/https
+                                        - https
+                                      type: string
+                                  type: object
+                                type: array
+                              enforcementMode:
+                                enum:
+                                  - disabled
+                                  - enforce
+                                type: string
+                            type: object
                           isAllowed:
                             type: boolean
                           mandatoryBody:
@@ -1177,6 +1390,8 @@ spec:
                             type: boolean
                           name:
                             type: string
+                          operationId:
+                            type: string
                           positionalParameters:
                             items:
                               properties:
@@ -1242,6 +1457,8 @@ spec:
                                       type: boolean
                                     exclusiveMin:
                                       type: boolean
+                                    isBase64:
+                                      type: boolean
                                     isCookie:
                                       type: boolean
                                     isHeader:
@@ -1251,11 +1468,19 @@ spec:
                                         - global
                                         - url
                                       type: string
+                                    mandatory:
+                                      type: boolean
                                     maximumLength:
+                                      type: integer
+                                    maximumValue:
                                       type: integer
                                     metacharsOnParameterValueCheck:
                                       type: boolean
                                     minimumLength:
+                                      type: integer
+                                    minimumValue:
+                                      type: integer
+                                    multipleOf:
                                       type: integer
                                     name:
                                       type: string
@@ -1307,6 +1532,8 @@ spec:
                                         - explicit
                                         - wildcard
                                       type: string
+                                    url:
+                                      type: object
                                     valueMetacharOverrides:
                                       items:
                                         properties:
@@ -1330,6 +1557,8 @@ spec:
                                         - user-input
                                         - xml
                                       type: string
+                                    wildcardOrder:
+                                      type: integer
                                   type: object
                                 urlSegmentIndex:
                                   type: integer
@@ -1361,10 +1590,18 @@ spec:
                           urlContentProfiles:
                             items:
                               properties:
+                                contentProfile:
+                                  properties:
+                                    name:
+                                      type: string
+                                  type: object
                                 headerName:
                                   type: string
                                 headerOrder:
-                                  type: string
+                                  anyOf:
+                                    - type: integer
+                                    - type: null
+                                  x-kubernetes-int-or-string: true
                                 headerValue:
                                   type: string
                                 name:
@@ -1425,32 +1662,50 @@ spec:
                               allowProcessingInstructions:
                                 type: boolean
                               maximumAttributeValueLength:
-                                pattern: any|\d+
-                                type: string
+                                anyOf:
+                                  - type: integer
+                                  - type: string
+                                x-kubernetes-int-or-string: true
                               maximumAttributesPerElement:
-                                pattern: any|\d+
-                                type: string
+                                anyOf:
+                                  - type: integer
+                                  - type: string
+                                x-kubernetes-int-or-string: true
                               maximumChildrenPerElement:
-                                pattern: any|\d+
-                                type: string
+                                anyOf:
+                                  - type: integer
+                                  - type: string
+                                x-kubernetes-int-or-string: true
                               maximumDocumentDepth:
-                                pattern: any|\d+
-                                type: string
+                                anyOf:
+                                  - type: integer
+                                  - type: string
+                                x-kubernetes-int-or-string: true
                               maximumDocumentSize:
-                                pattern: any|\d+
-                                type: string
+                                anyOf:
+                                  - type: integer
+                                  - type: string
+                                x-kubernetes-int-or-string: true
                               maximumElements:
-                                pattern: any|\d+
-                                type: string
+                                anyOf:
+                                  - type: integer
+                                  - type: string
+                                x-kubernetes-int-or-string: true
                               maximumNSDeclarations:
-                                pattern: any|\d+
-                                type: string
+                                anyOf:
+                                  - type: integer
+                                  - type: string
+                                x-kubernetes-int-or-string: true
                               maximumNameLength:
-                                pattern: any|\d+
-                                type: string
+                                anyOf:
+                                  - type: integer
+                                  - type: string
+                                x-kubernetes-int-or-string: true
                               maximumNamespaceLength:
-                                pattern: any|\d+
-                                type: string
+                                anyOf:
+                                  - type: integer
+                                  - type: string
+                                x-kubernetes-int-or-string: true
                               tolerateCloseTagShorthand:
                                 type: boolean
                               tolerateLeadingWhiteSpace:
@@ -1466,6 +1721,19 @@ spec:
                             type: boolean
                           name:
                             type: string
+                          signatureOverrides:
+                            items:
+                              properties:
+                                enabled:
+                                  type: boolean
+                                name:
+                                  type: string
+                                signatureId:
+                                  type: integer
+                                tag:
+                                  type: string
+                              type: object
+                            type: array
                         type: object
                       type: array
                     xml-validation-files:
