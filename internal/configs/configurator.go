@@ -1221,20 +1221,21 @@ func createSpiffeCert(certs []*x509.Certificate) []byte {
 	return pemData
 }
 
-func (cnf *Configurator) updateApResources(ingEx *IngressEx) map[string]string {
-	apRes := make(map[string]string)
+func (cnf *Configurator) updateApResources(ingEx *IngressEx) (apRes AppProtectResources) {
 	if ingEx.AppProtectPolicy != nil {
 		policyFileName := appProtectPolicyFileNameFromUnstruct(ingEx.AppProtectPolicy)
 		policyContent := generateApResourceFileContent(ingEx.AppProtectPolicy)
 		cnf.nginxManager.CreateAppProtectResourceFile(policyFileName, policyContent)
-		apRes[appProtectPolicyKey] = policyFileName
+		apRes.AppProtectPolicy = policyFileName
 	}
 
 	if ingEx.AppProtectLogConf != nil {
-		logConfFileName := appProtectLogConfFileNameFromUnstruct(ingEx.AppProtectLogConf)
-		logConfContent := generateApResourceFileContent(ingEx.AppProtectLogConf)
-		cnf.nginxManager.CreateAppProtectResourceFile(logConfFileName, logConfContent)
-		apRes[appProtectLogConfKey] = logConfFileName + " " + ingEx.AppProtectLogDst
+		for i, logConf := range ingEx.AppProtectLogConf {
+			logConfFileName := appProtectLogConfFileNameFromUnstruct(logConf)
+			logConfContent := generateApResourceFileContent(logConf)
+			cnf.nginxManager.CreateAppProtectResourceFile(logConfFileName, logConfContent)
+			apRes.AppProtectLogconfs = append(apRes.AppProtectLogconfs, logConfFileName+" "+ingEx.AppProtectLogDst[i])
+		}
 	}
 
 	return apRes

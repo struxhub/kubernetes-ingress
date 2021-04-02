@@ -22,7 +22,7 @@ func TestGenerateNginxCfg(t *testing.T) {
 
 	expected := createExpectedConfigForCafeIngressEx()
 
-	apRes := make(map[string]string)
+	apRes := AppProtectResources{}
 	result, warnings := generateNginxCfg(&cafeIngressEx, apRes, false, configParams, false, false, &StaticConfigParams{}, false)
 
 	if diff := cmp.Diff(expected, result); diff != "" {
@@ -62,7 +62,7 @@ func TestGenerateNginxCfgForJWT(t *testing.T) {
 		},
 	}
 
-	apRes := make(map[string]string)
+	apRes := AppProtectResources{}
 	result, warnings := generateNginxCfg(&cafeIngressEx, apRes, false, configParams, true, false, &StaticConfigParams{}, false)
 
 	if !reflect.DeepEqual(result.Servers[0].JWTAuth, expected.Servers[0].JWTAuth) {
@@ -81,7 +81,7 @@ func TestGenerateNginxCfgWithMissingTLSSecret(t *testing.T) {
 	cafeIngressEx.SecretRefs["cafe-secret"].Error = errors.New("secret doesn't exist")
 	configParams := NewDefaultConfigParams()
 
-	apRes := make(map[string]string)
+	apRes := AppProtectResources{}
 	result, resultWarnings := generateNginxCfg(&cafeIngressEx, apRes, false, configParams, false, false, &StaticConfigParams{}, false)
 
 	expectedCiphers := "NULL"
@@ -105,7 +105,7 @@ func TestGenerateNginxCfgWithWildcardTLSSecret(t *testing.T) {
 	cafeIngressEx.Ingress.Spec.TLS[0].SecretName = ""
 	configParams := NewDefaultConfigParams()
 
-	apRes := make(map[string]string)
+	apRes := AppProtectResources{}
 	result, warnings := generateNginxCfg(&cafeIngressEx, apRes, false, configParams, false, false, &StaticConfigParams{}, true)
 
 	resultServer := result.Servers[0]
@@ -328,7 +328,7 @@ func TestGenerateNginxCfgForMergeableIngresses(t *testing.T) {
 
 	configParams := NewDefaultConfigParams()
 
-	masterApRes := make(map[string]string)
+	masterApRes := AppProtectResources{}
 	result, warnings := generateNginxCfgForMergeableIngresses(mergeableIngresses, masterApRes, configParams, false, false, &StaticConfigParams{}, false)
 
 	if diff := cmp.Diff(expected, result); diff != "" {
@@ -353,7 +353,7 @@ func TestGenerateNginxConfigForCrossNamespaceMergeableIngresses(t *testing.T) {
 	expected := createExpectedConfigForCrossNamespaceMergeableCafeIngress()
 	configParams := NewDefaultConfigParams()
 
-	emptyApResources := make(map[string]string)
+	emptyApResources := AppProtectResources{}
 	result, warnings := generateNginxCfgForMergeableIngresses(mergeableIngresses, emptyApResources, configParams, false, false, &StaticConfigParams{}, false)
 
 	if diff := cmp.Diff(expected, result); diff != "" {
@@ -417,7 +417,7 @@ func TestGenerateNginxCfgForMergeableIngressesForJWT(t *testing.T) {
 	configParams := NewDefaultConfigParams()
 	isPlus := true
 
-	masterApRes := make(map[string]string)
+	masterApRes := AppProtectResources{}
 	result, warnings := generateNginxCfgForMergeableIngresses(mergeableIngresses, masterApRes, configParams, isPlus, false, &StaticConfigParams{}, false)
 
 	if !reflect.DeepEqual(result.Servers[0].JWTAuth, expected.Servers[0].JWTAuth) {
@@ -792,7 +792,7 @@ func TestGenerateNginxCfgForSpiffe(t *testing.T) {
 		expected.Servers[0].Locations[i].SSL = true
 	}
 
-	apResources := make(map[string]string)
+	apResources := AppProtectResources{}
 	result, warnings := generateNginxCfg(&cafeIngressEx, apResources, false, configParams, false, false,
 		&StaticConfigParams{NginxServiceMesh: true}, false)
 
@@ -814,7 +814,7 @@ func TestGenerateNginxCfgForInternalRoute(t *testing.T) {
 	expected.Servers[0].SpiffeCerts = true
 	expected.Ingress.Annotations[internalRouteAnnotation] = "true"
 
-	apResources := make(map[string]string)
+	apResources := AppProtectResources{}
 	result, warnings := generateNginxCfg(&cafeIngressEx, apResources, false, configParams, false, false,
 		&StaticConfigParams{NginxServiceMesh: true, EnableInternalRoutes: true}, false)
 
