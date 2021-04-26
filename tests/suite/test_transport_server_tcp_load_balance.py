@@ -117,7 +117,7 @@ class TestTransportServerTcpLoadBalance:
             assert found
 
     def test_tcp_request_load_balanced_multiple(
-            self, kube_apis, crd_ingress_controller, transport_server_setup, ingress_controller_prerequisites
+            self, kube_apis, crd_ingress_controller, transport_server_setup
     ):
         """
         Requests to the load balanced TCP service should result in responses from 3 different endpoints.
@@ -189,7 +189,7 @@ class TestTransportServerTcpLoadBalance:
         wait_before_test()
 
     def test_tcp_request_load_balanced_wrong_port(
-            self, kube_apis, crd_ingress_controller, transport_server_setup, ingress_controller_prerequisites
+            self, kube_apis, crd_ingress_controller, transport_server_setup
     ):
         """
         Requests to the load balanced TCP service should result in responses from 3 different endpoints.
@@ -220,7 +220,7 @@ class TestTransportServerTcpLoadBalance:
         self.restore_ts(kube_apis, transport_server_setup)
 
     def test_tcp_request_load_balanced_missing_service(
-            self, kube_apis, crd_ingress_controller, transport_server_setup, ingress_controller_prerequisites
+            self, kube_apis, crd_ingress_controller, transport_server_setup
     ):
         """
         Requests to the load balanced TCP service should result in responses from 3 different endpoints.
