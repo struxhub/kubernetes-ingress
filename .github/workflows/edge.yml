@@ -179,6 +179,10 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
+      - name: Output Variables
+        id: commit
+        run: |
+          echo "::set-output name=nginx_version::$(cat build/Dockerfile | grep -m1 "FROM nginx:" | cut -d":" -f2 | cut -d" " -f1)"
       - name: Fetch Cached Artifacts
         uses: actions/cache@v2.1.5
         with:
@@ -207,6 +211,7 @@ jobs:
           load: true
           build-args: |
             BUILD_OS=${{ matrix.image }}
+            NGINX_VERSION=${{ steps.commit.outputs.nginx_version }}
         if: matrix.type == 'oss'
       - name: Build Plus Docker Image ${{ matrix.image }}
         uses: docker/build-push-action@v2
@@ -478,6 +483,7 @@ jobs:
         run: |
           echo "::set-output name=sha::$(echo ${GITHUB_SHA} | cut -c1-7)"
           echo "::set-output name=tag::${GITHUB_REF#refs/tags/}"
+          echo "::set-output name=nginx_version::$(cat build/Dockerfile | grep -m1 "FROM nginx:" | cut -d":" -f2 | cut -d" " -f1)"
       - name: Fetch Cached Artifacts
         uses: actions/cache@v2.1.5
         with:
@@ -517,6 +523,7 @@ jobs:
           build-args: |
             BUILD_OS=${{ matrix.type }}
             IC_VERSION=${{ steps.commit.outputs.tag }}-SNAPSHOT-${{ steps.commit.outputs.sha }}
+            NGINX_VERSION=${{ steps.commit.outputs.nginx_version }}
 
   package-helm:
     name: Package Helm Chart
