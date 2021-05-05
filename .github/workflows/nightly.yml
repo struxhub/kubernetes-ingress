@@ -111,19 +111,19 @@ jobs:
             file: build/Dockerfile
             context: '.'
             target: goreleaser
-            image: openshift
+            image: ubi
             type: oss
           - os: ubuntu-20.04
             file: build/Dockerfile
             context: '.'
             target: goreleaser
-            image: openshift-plus
+            image: ubi-plus
             type: plus
           - os: ubuntu-20.04
             file: build/Dockerfile
             context: '.'
             target: goreleaser
-            image: debian-plus-ap
+            image: debian-plus-nap
             type: plus-ap
           - os: ubuntu-20.04
             file: build/DockerfileWithAppProtectForPlusForOpenShift
@@ -356,7 +356,7 @@ jobs:
             "nginx-repo.crt=${{ secrets.KIC_NGINX_AP_CRT }}"
             "nginx-repo.key=${{ secrets.KIC_NGINX_AP_KEY }}"
           build-args: |
-            BUILD_OS=debian-plus-ap
+            BUILD_OS=debian-plus-nap
             PLUS=-plus
         if: matrix.type == 'plus-ap'
       - name: Build Test-Runner Container
