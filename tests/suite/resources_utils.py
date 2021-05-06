@@ -352,7 +352,8 @@ def get_service_node_ports(v1: CoreV1Api, name, namespace) -> (int, int, int, in
     :return: (plain_port, ssl_port, api_port, exporter_port)
     """
     resp = v1.read_namespaced_service(name, namespace)
-    assert len(resp.spec.ports) == 6, "An unexpected amount of ports in a service. Check the configuration"
+    if len(resp.spec.ports) == 6:
+        print("An unexpected amount of ports in a service. Check the configuration")
     print(f"Service with an API port: {resp.spec.ports[2].node_port}")
     print(f"Service with an Exporter port: {resp.spec.ports[3].node_port}")
     return resp.spec.ports[0].node_port, resp.spec.ports[1].node_port,\

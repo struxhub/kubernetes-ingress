@@ -118,7 +118,6 @@ class TestTransportServerUdpLoadBalance:
                     found = True
             assert found
 
-    @pytest.mark.sean
     def test_udp_request_load_balanced_multiple(
             self, kube_apis, crd_ingress_controller, transport_server_setup
     ):
