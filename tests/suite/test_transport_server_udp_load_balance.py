@@ -15,7 +15,7 @@ from suite.custom_resources_utils import (
 )
 from settings import TEST_DATA
 
-@pytest.mark.ts
+@pytest.mark.udpts
 @pytest.mark.parametrize(
     "crd_ingress_controller, transport_server_setup",
     [
@@ -188,49 +188,11 @@ class TestTransportServerUdpLoadBalance:
         )
         wait_before_test()
 
-    def test_udp_request_load_balanced_wrong_port(
-            self, kube_apis, crd_ingress_controller, transport_server_setup
+    @pytest.mark.parametrize("file", ["wrong-port-transport-server.yaml", "missing-service-transport-server.yaml"])
+    def test_udp_request_fails(
+            self, kube_apis, crd_ingress_controller, transport_server_setup, file
     ):
-        """
-        Requests to the load balanced UDP service should result in responses from 3 different endpoints.
-        """
-
-        patch_src = f"{TEST_DATA}/transport-server-udp-load-balance/wrong-port-transport-server.yaml"
-        patch_ts(
-            kube_apis.custom_objects,
-            transport_server_setup.name,
-            patch_src,
-            transport_server_setup.namespace,
-        )
-
-        wait_before_test()
-
-        port = transport_server_setup.public_endpoint.udp_server_port
-        host = transport_server_setup.public_endpoint.public_ip
-
-        print(f"sending udp requests to: {host}:{port}")
-        for i in range(3):
-            client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
-            client.settimeout(2)
-            client.sendto("ping".encode('utf-8'), (host, port))
-            try:
-                client.recvfrom(4096)
-                # it should timeout, it's an error if it doesn't.
-                assert False
-            except socket.timeout:
-                print("successfully timed out")
-            client.close()
-
-        self.restore_ts(kube_apis, transport_server_setup)
-
-    def test_udp_request_load_balanced_missing_service(
-            self, kube_apis, crd_ingress_controller, transport_server_setup
-    ):
-        """
-        Requests to the load balanced UDP service should result in responses from 3 different endpoints.
-        """
-
-        patch_src = f"{TEST_DATA}/transport-server-udp-load-balance/missing-service-transport-server.yaml"
+        patch_src = f"{TEST_DATA}/transport-server-udp-load-balance/{file}"
         patch_ts(
             kube_apis.custom_objects,
             transport_server_setup.name,
@@ -251,6 +213,7 @@ class TestTransportServerUdpLoadBalance:
             try:
                 client.recvfrom(4096)
                 # it should timeout
+                print(f"incorrect config from {file} should have resulted in an error")
                 assert False
             except socket.timeout:
                 print("successfully timed out")
