@@ -14,12 +14,11 @@ spec:
     spec:
       containers:
         - name: udp-service
-          image: udp-server:latest
+          image: seanoneillf5/udp-server:1.0
           ports:
             - containerPort: 3334
               name: udp-server
               protocol: UDP
-          imagePullPolicy: Never
 ---
 apiVersion: v1
 kind: Service

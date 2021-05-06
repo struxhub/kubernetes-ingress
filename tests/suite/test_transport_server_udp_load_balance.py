@@ -15,7 +15,7 @@ from suite.custom_resources_utils import (
 )
 from settings import TEST_DATA
 
-@pytest.mark.udpts
+@pytest.mark.ts
 @pytest.mark.parametrize(
     "crd_ingress_controller, transport_server_setup",
     [
