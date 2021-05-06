@@ -9,6 +9,9 @@ from suite.resources_utils import (
 )
 from suite.custom_resources_utils import (
     patch_ts,
+    read_ts,
+    delete_ts,
+    create_ts_from_yaml,
 )
 from settings import TEST_DATA
 
@@ -114,6 +117,77 @@ class TestTransportServerUdpLoadBalance:
                 if key in server:
                     found = True
             assert found
+
+    @pytest.mark.sean
+    def test_udp_request_load_balanced_multiple(
+            self, kube_apis, crd_ingress_controller, transport_server_setup
+    ):
+        """
+        Requests to the load balanced UDP service should result in responses from 3 different endpoints.
+        """
+        port = transport_server_setup.public_endpoint.udp_server_port
+        host = transport_server_setup.public_endpoint.public_ip
+
+        # Step 1, confirm load balancing is working.
+        print(f"sending udp requests to: {host}:{port}")
+        client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
+        client.sendto("ping".encode('utf-8'), (host, port))
+        data, address = client.recvfrom(4096)
+        endpoint = data.decode()
+        print(f'response: {endpoint}')
+        client.close()
+
+        # Step 2, add a second TransportServer with the same port and confirm te collision
+        transport_server_file = f"{TEST_DATA}/transport-server-udp-load-balance/second-transport-server.yaml"
+        ts_resource = create_ts_from_yaml(
+            kube_apis.custom_objects, transport_server_file, transport_server_setup.namespace
+        )
+        wait_before_test()
+
+        second_ts_name = ts_resource['metadata']['name']
+        response = read_ts(
+            kube_apis.custom_objects,
+            transport_server_setup.namespace,
+            second_ts_name,
+        )
+        assert (
+                response["status"]
+                and response["status"]["reason"] == "Rejected"
+                and response["status"]["state"] == "Warning"
+                and response["status"]["message"] == "Listener udp-server is taken by another resource"
+        )
+
+        # Step 3, remove the default TransportServer with the same port
+        delete_ts(kube_apis.custom_objects, transport_server_setup.resource, transport_server_setup.namespace)
+
+        wait_before_test()
+        response = read_ts(
+            kube_apis.custom_objects,
+            transport_server_setup.namespace,
+            second_ts_name,
+        )
+        assert (
+                response["status"]
+                and response["status"]["reason"] == "AddedOrUpdated"
+                and response["status"]["state"] == "Valid"
+        )
+
+        # Step 4, confirm load balancing is still working.
+        client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
+        client.sendto("ping".encode('utf-8'), (host, port))
+        data, address = client.recvfrom(4096)
+        endpoint = data.decode()
+        print(f'response: {endpoint}')
+        client.close()
+        assert endpoint is not ""
+
+        # cleanup
+        delete_ts(kube_apis.custom_objects, ts_resource, transport_server_setup.namespace)
+        transport_server_file = f"{TEST_DATA}/transport-server-udp-load-balance/standard/transport-server.yaml"
+        create_ts_from_yaml(
+            kube_apis.custom_objects, transport_server_file, transport_server_setup.namespace
+        )
+        wait_before_test()
 
     def test_udp_request_load_balanced_wrong_port(
             self, kube_apis, crd_ingress_controller, transport_server_setup
