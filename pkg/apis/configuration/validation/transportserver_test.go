@@ -228,22 +228,32 @@ func TestValidateTransportServerLoadBalancingMethod(t *testing.T) {
 			hasError: true,
 		},
 		{
-			method:   "hash test",
+			method:   "hash $remote_addr",
 			isPlus:   false,
 			hasError: false,
 		},
 		{
-			method:   "hash test toomany",
+			method:   "hash $invalid_var",
 			isPlus:   false,
 			hasError: true,
 		},
 		{
-			method:   "hash test consistent",
+			method:   "hash not_var",
+			isPlus:   false,
+			hasError: true,
+		},
+		{
+			method:   "hash $remote_addr toomany",
+			isPlus:   false,
+			hasError: true,
+		},
+		{
+			method:   "hash $remote_addr consistent",
 			isPlus:   false,
 			hasError: false,
 		},
 		{
-			method:   "hash test toomany consistent",
+			method:   "hash $remote_addr toomany consistent",
 			isPlus:   false,
 			hasError: true,
 		},

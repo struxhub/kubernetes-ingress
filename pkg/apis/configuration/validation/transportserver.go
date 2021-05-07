@@ -2,6 +2,7 @@ package validation
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/nginxinc/kubernetes-ingress/pkg/apis/configuration/v1alpha1"
@@ -230,20 +231,30 @@ var nginxPlusStreamLoadBalanceValidInput = map[string]bool{
 	"least_time last_byte inflight": true,
 }
 
-func validateHashLoadBalancingMethod(method string) error {
-	keyWords := strings.Split(method, " ")
-	if len(keyWords) > 0 && keyWords[0] == "hash" {
-		if len(keyWords) == 2 || (len(keyWords) == 3 && keyWords[2] == "consistent") {
-			value := keyWords[1]
-			if !escapedStringsFmtRegexp.MatchString(value) {
-				return fmt.Errorf("invalid value for hash: %v", validation.RegexError(escapedStringsErrMsg, escapedStringsFmt))
-			}
+var loadBalancingVariables = map[string]bool{
+	"$remote_addr": true,
+}
 
-			return nil
+var hashMethodRegexp = regexp.MustCompile("^hash (\\S+)(?: consistent)?$")
+
+func validateHashLoadBalancingMethod(method string) error {
+	matches := hashMethodRegexp.FindStringSubmatch(method)
+	if len(matches) != 2 {
+		return fmt.Errorf("invalid value for load balancing method: %v", method)
+	}
+
+	hashKey := matches[1]
+	if strings.Contains(hashKey, "$") {
+		if loadBalancingVariables[hashKey] != true {
+			return fmt.Errorf("invalid value for load balancing method variable: %v", hashKey)
 		}
 	}
 
-	return fmt.Errorf("invalid load balancing method: %q", method)
+	if !escapedStringsFmtRegexp.MatchString(method) {
+		return fmt.Errorf("invalid value for hash: %v", validation.RegexError(escapedStringsErrMsg, escapedStringsFmt))
+	}
+
+	return nil
 }
 
 func validateTSUpstreamHealthChecks(hc *v1alpha1.HealthCheck, fieldPath *field.Path) field.ErrorList {
