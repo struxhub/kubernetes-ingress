@@ -39,7 +39,7 @@ class TestTransportServerTcpLoadBalance:
         """
         Function to revert a TransportServer resource to a valid state.
         """
-        patch_src = f"{TEST_DATA}/transport-server-status/standard/transport-server.yaml"
+        patch_src = f"{TEST_DATA}/transport-server-tcp-load-balance/standard/transport-server.yaml"
         patch_ts(
             kube_apis.custom_objects,
             transport_server_setup.name,
@@ -255,11 +255,11 @@ class TestTransportServerTcpLoadBalance:
             self, kube_apis, crd_ingress_controller, transport_server_setup, ingress_controller_prerequisites
     ):
         """
-        Requests to the load balanced TCP service should result in responses from 3 different endpoints.
+        Update load balancing method to 'hash'. This send requests to a specific pod based on it's IP. In this case
+        resulting in a single endpoint handling all the requests.
         """
-        # update load balance method - ip_hash
-        # test confirm that requests go to same ip
-        # change to least_conn and try again
+
+        # Step 1 - set the load balancing method.
 
         patch_src = f"{TEST_DATA}/transport-server-tcp-load-balance/method-transport-server.yaml"
         patch_ts(
@@ -270,14 +270,6 @@ class TestTransportServerTcpLoadBalance:
         )
         wait_before_test()
 
-        response = read_ts(
-            kube_apis.custom_objects,
-            transport_server_setup.namespace,
-            transport_server_setup.name,
-        )
-
-        print(response)
-
         result_conf = get_ts_nginx_template_conf(
             kube_apis.v1,
             transport_server_setup.namespace,
@@ -286,17 +278,14 @@ class TestTransportServerTcpLoadBalance:
             ingress_controller_prerequisites.namespace
         )
 
-        # wait_before_test(60)
-
         pattern = 'server .*;'
         servers = re.findall(pattern, result_conf)
         assert len(servers) is 3
 
+        # Step 2 - confirm all request go to the same endpoint.
+
         port = transport_server_setup.public_endpoint.tcp_server_port
         host = transport_server_setup.public_endpoint.public_ip
-
-        print(f"sending tcp requests to: {host}:{port}")
-
         endpoints = {}
         for i in range(20):
             client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -312,20 +301,22 @@ class TestTransportServerTcpLoadBalance:
 
         assert len(endpoints) is 1
 
-        # result_conf = get_ts_nginx_template_conf(
-        #     kube_apis.v1,
-        #     transport_server_setup.namespace,
-        #     transport_server_setup.name,
-        #     transport_server_setup.ingress_pod_name,
-        #     ingress_controller_prerequisites.namespace
-        # )
-        #
-        # pattern = 'server .*;'
-        # servers = re.findall(pattern, result_conf)
-        # assert len(servers) is 3
-        # for key in endpoints.keys():
-        #     found = False
-        #     for server in servers:
-        #         if key in server:
-        #             found = True
-        #     assert found
+        # Step 3 - restore to default load balancing method and confirm requests are balanced.
+
+        self.restore_ts(kube_apis, transport_server_setup)
+        wait_before_test()
+
+        endpoints = {}
+        for i in range(20):
+            client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            client.connect((host, port))
+            response = client.recv(4096)
+            endpoint = response.decode()
+            print(f' req number {i}; response: {endpoint}')
+            if endpoint not in endpoints:
+                endpoints[endpoint] = 1
+            else:
+                endpoints[endpoint] = endpoints[endpoint] + 1
+            client.close()
+
+        assert len(endpoints) is 3

@@ -10,6 +10,6 @@ spec:
     - name: tcp-app
       service: tcp-service
       port: 3333
-      loadBalancingMethod: round_robin
+      loadBalancingMethod: hash $remote_addr
   action:
     pass: tcp-app
