@@ -14,7 +14,7 @@ RUN apt-get update \
 
 
 ############################################# Base image for Alpine #############################################
-FROM nginx:1.19.9-alpine AS alpine
+FROM nginx:1.19.10-alpine AS alpine
 ARG IC_VERSION
 
 LABEL version=alpine-nginx-$NGINX_VERSION-$IC_VERSION
