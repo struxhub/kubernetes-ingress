@@ -35,14 +35,14 @@ type VirtualServer struct {
 
 // VirtualServerSpec is the spec of the VirtualServer resource.
 type VirtualServerSpec struct {
-	IngressClass   string            `json:"ingressClassName"`
+	IngressClass   string            `json:"ingressClassName,omitempty"`
 	Host           string            `json:"host"`
-	TLS            *TLS              `json:"tls"`
-	Policies       []PolicyReference `json:"policies"`
-	Upstreams      []Upstream        `json:"upstreams"`
-	Routes         []Route           `json:"routes"`
-	HTTPSnippets   string            `json:"http-snippets"`
-	ServerSnippets string            `json:"server-snippets"`
+	TLS            *TLS              `json:"tls,omitempty"`
+	Policies       []PolicyReference `json:"policies,omitempty"`
+	Upstreams      []Upstream        `json:"upstreams,omitempty"`
+	Routes         []Route           `json:"routes,omitempty"`
+	HTTPSnippets   string            `json:"http-snippets,omitempty"`
+	ServerSnippets string            `json:"server-snippets,omitempty"`
 }
 
 // PolicyReference references a policy by name and an optional namespace.
@@ -55,29 +55,29 @@ type PolicyReference struct {
 type Upstream struct {
 	Name                     string            `json:"name"`
 	Service                  string            `json:"service"`
-	Subselector              map[string]string `json:"subselector"`
+	Subselector              map[string]string `json:"subselector,omitempty"`
 	Port                     uint16            `json:"port"`
-	LBMethod                 string            `json:"lb-method"`
-	FailTimeout              string            `json:"fail-timeout"`
-	MaxFails                 *int              `json:"max-fails"`
-	MaxConns                 *int              `json:"max-conns"`
-	Keepalive                *int              `json:"keepalive"`
-	ProxyConnectTimeout      string            `json:"connect-timeout"`
-	ProxyReadTimeout         string            `json:"read-timeout"`
-	ProxySendTimeout         string            `json:"send-timeout"`
-	ProxyNextUpstream        string            `json:"next-upstream"`
-	ProxyNextUpstreamTimeout string            `json:"next-upstream-timeout"`
-	ProxyNextUpstreamTries   int               `json:"next-upstream-tries"`
-	ProxyBuffering           *bool             `json:"buffering"`
-	ProxyBuffers             *UpstreamBuffers  `json:"buffers"`
-	ProxyBufferSize          string            `json:"buffer-size"`
-	ClientMaxBodySize        string            `json:"client-max-body-size"`
-	TLS                      UpstreamTLS       `json:"tls"`
-	HealthCheck              *HealthCheck      `json:"healthCheck"`
-	SlowStart                string            `json:"slow-start"`
-	Queue                    *UpstreamQueue    `json:"queue"`
-	SessionCookie            *SessionCookie    `json:"sessionCookie"`
-	UseClusterIP             bool              `json:"use-cluster-ip"`
+	LBMethod                 string            `json:"lb-method,omitempty"`
+	FailTimeout              string            `json:"fail-timeout,omitempty"`
+	MaxFails                 *int              `json:"max-fails,omitempty"`
+	MaxConns                 *int              `json:"max-conns,omitempty"`
+	Keepalive                *int              `json:"keepalive,omitempty"`
+	ProxyConnectTimeout      string            `json:"connect-timeout,omitempty"`
+	ProxyReadTimeout         string            `json:"read-timeout,omitempty"`
+	ProxySendTimeout         string            `json:"send-timeout,omitempty"`
+	ProxyNextUpstream        string            `json:"next-upstream,omitempty"`
+	ProxyNextUpstreamTimeout string            `json:"next-upstream-timeout,omitempty"`
+	ProxyNextUpstreamTries   int               `json:"next-upstream-tries,omitempty"`
+	ProxyBuffering           *bool             `json:"buffering,omitempty"`
+	ProxyBuffers             *UpstreamBuffers  `json:"buffers,omitempty"`
+	ProxyBufferSize          string            `json:"buffer-size,omitempty"`
+	ClientMaxBodySize        string            `json:"client-max-body-size,omitempty"`
+	TLS                      UpstreamTLS       `json:"tls,omitempty"`
+	HealthCheck              *HealthCheck      `json:"healthCheck,omitempty"`
+	SlowStart                string            `json:"slow-start,omitempty"`
+	Queue                    *UpstreamQueue    `json:"queue,omitempty"`
+	SessionCookie            *SessionCookie    `json:"sessionCookie,omitempty"`
+	UseClusterIP             bool              `json:"use-cluster-ip,omitempty"`
 }
 
 // UpstreamBuffers defines Buffer Configuration for an Upstream.
@@ -128,21 +128,21 @@ type SessionCookie struct {
 // Route defines a route.
 type Route struct {
 	Path             string            `json:"path"`
-	Policies         []PolicyReference `json:"policies"`
-	Route            string            `json:"route"`
-	Action           *Action           `json:"action"`
-	Splits           []Split           `json:"splits"`
-	Matches          []Match           `json:"matches"`
-	ErrorPages       []ErrorPage       `json:"errorPages"`
-	LocationSnippets string            `json:"location-snippets"`
+	Policies         []PolicyReference `json:"policies,omitempty"`
+	Route            string            `json:"route,omitempty"`
+	Action           *Action           `json:"action,omitempty"`
+	Splits           []Split           `json:"splits,omitempty"`
+	Matches          []Match           `json:"matches,omitempty"`
+	ErrorPages       []ErrorPage       `json:"errorPages,omitempty"`
+	LocationSnippets string            `json:"location-snippets,omitempty"`
 }
 
 // Action defines an action.
 type Action struct {
-	Pass     string          `json:"pass"`
-	Redirect *ActionRedirect `json:"redirect"`
-	Return   *ActionReturn   `json:"return"`
-	Proxy    *ActionProxy    `json:"proxy"`
+	Pass     string          `json:"pass,omitempty"`
+	Redirect *ActionRedirect `json:"redirect,omitempty"`
+	Return   *ActionReturn   `json:"return,omitempty"`
+	Proxy    *ActionProxy    `json:"proxy,omitempty"`
 }
 
 // ActionRedirect defines a redirect in an Action.
@@ -235,8 +235,8 @@ type TLS struct {
 // TLSRedirect defines a redirect for a TLS.
 type TLSRedirect struct {
 	Enable  bool   `json:"enable"`
-	Code    *int   `json:"code"`
-	BasedOn string `json:"basedOn"`
+	Code    *int   `json:"code,omitempty"`
+	BasedOn string `json:"basedOn,omitempty"`
 }
 
 // VirtualServerStatus defines the status for the VirtualServer resource.
