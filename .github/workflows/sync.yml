@@ -52,7 +52,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Sync Labels
-        uses: micnncim/action-label-syncer@v1.2.0
+        uses: micnncim/action-label-syncer@v1.3.0
         with:
           repository: ${{ matrix.repo }}
           token: ${{ secrets.NGINX_PAT }}
