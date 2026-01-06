@@ -44,31 +44,31 @@ type VirtualServer struct {
 // VirtualServerSpec is the spec of the VirtualServer resource.
 type VirtualServerSpec struct {
 	// Specifies which Ingress Controller must handle the VirtualServerRoute resource. Must be the same as the ingressClassName of the VirtualServer that references this resource.
-	IngressClass string `json:"ingressClassName"`
+	IngressClass string `json:"ingressClassName,omitempty"`
 	// The host (domain name) of the server. Must be a valid subdomain as defined in RFC 1123, such as my-app or hello.example.com. When using a wildcard domain like *.example.com the domain must be contained in double quotes. The host value needs to be unique among all Ingress and VirtualServer resources.
 	Host string `json:"host"`
 	// Sets a custom HTTP and/or HTTPS listener. Valid fields are listener.http and listener.https. Each field must reference the name of a valid listener defined in a GlobalConfiguration resource
-	Listener *VirtualServerListener `json:"listener"`
+	Listener *VirtualServerListener `json:"listener,omitempty"`
 	// The TLS termination configuration.
-	TLS *TLS `json:"tls"`
-	// Enables or disables decompression of gzipped responses for clients. Allowed values “on”/“off”, “true”/“false” or “yes”/“no”. If the gunzip value is not set, it defaults to off.
-	Gunzip bool `json:"gunzip"`
+	TLS *TLS `json:"tls,omitempty"`
+	// Enables or disables decompression of gzipped responses for clients. Allowed values "on"/"off", "true"/"false" or "yes"/"no". If the gunzip value is not set, it defaults to off.
+	Gunzip bool `json:"gunzip,omitempty"`
 	// A list of policies.
-	Policies []PolicyReference `json:"policies"`
+	Policies []PolicyReference `json:"policies,omitempty"`
 	// A list of upstreams.
-	Upstreams []Upstream `json:"upstreams"`
+	Upstreams []Upstream `json:"upstreams,omitempty"`
 	// A list of routes.
-	Routes []Route `json:"routes"`
+	Routes []Route `json:"routes,omitempty"`
 	// Sets a custom snippet in the http context.
-	HTTPSnippets string `json:"http-snippets"`
+	HTTPSnippets string `json:"http-snippets,omitempty"`
 	// Sets a custom snippet in server context. Overrides the server-snippets ConfigMap key.
-	ServerSnippets string `json:"server-snippets"`
+	ServerSnippets string `json:"server-snippets,omitempty"`
 	// A reference to a DosProtectedResource, setting this enables DOS protection of the VirtualServer route.
-	Dos string `json:"dos"`
+	Dos string `json:"dos,omitempty"`
 	// The externalDNS configuration for a VirtualServer.
-	ExternalDNS ExternalDNS `json:"externalDNS"`
+	ExternalDNS ExternalDNS `json:"externalDNS,omitempty"`
 	// InternalRoute allows for the configuration of internal routing.
-	InternalRoute bool `json:"internalRoute"`
+	InternalRoute bool `json:"internalRoute,omitempty"`
 }
 
 // VirtualServerListener references a custom http and/or https listener defined in GlobalConfiguration.
@@ -119,70 +119,70 @@ type PolicyReference struct {
 type Upstream struct {
 	// The name of the upstream. Must be a valid DNS label as defined in RFC 1035. For example, hello and upstream-123 are valid. The name must be unique among all upstreams of the resource.
 	Name string `json:"name"`
-	// The name of a service. If the Service belongs to a different namespace than the VirtualServer or VirtualServerRoute, you need to include the namespace. For example, tea-namespace/tea. If the service doesn’t exist, NGINX will assume the service has zero endpoints and return a 502 response for requests for this upstream. For NGINX Plus only, services of type ExternalName are also supported in the same namespace.
+	// The name of a service. If the Service belongs to a different namespace than the VirtualServer or VirtualServerRoute, you need to include the namespace. For example, tea-namespace/tea. If the service doesn't exist, NGINX will assume the service has zero endpoints and return a 502 response for requests for this upstream. For NGINX Plus only, services of type ExternalName are also supported in the same namespace.
 	Service string `json:"service"`
 	// Selects the pods within the service using label keys and values. By default, all pods of the service are selected. Note: the specified labels are expected to be present in the pods when they are created. If the pod labels are updated, NGINX Ingress Controller will not see that change until the number of the pods is changed.
-	Subselector map[string]string `json:"subselector"`
-	// The port of the service. If the service doesn’t define that port, NGINX will assume the service has zero endpoints and return a 502 response for requests for this upstream. The port must fall into the range 1..65535.
+	Subselector map[string]string `json:"subselector,omitempty"`
+	// The port of the service. If the service doesn't define that port, NGINX will assume the service has zero endpoints and return a 502 response for requests for this upstream. The port must fall into the range 1..65535.
 	Port uint16 `json:"port"`
 	// The load balancing method. To use the round-robin method, specify round_robin. The default is specified in the lb-method ConfigMap key.
-	LBMethod string `json:"lb-method"`
+	LBMethod string `json:"lb-method,omitempty"`
 	// The time during which the specified number of unsuccessful attempts to communicate with an upstream server should happen to consider the server unavailable. The default is set in the fail-timeout ConfigMap key.
-	FailTimeout string `json:"fail-timeout"`
+	FailTimeout string `json:"fail-timeout,omitempty"`
 	// The number of unsuccessful attempts to communicate with an upstream server that should happen in the duration set by the fail-timeout to consider the server unavailable. The default is set in the max-fails ConfigMap key.
-	MaxFails *int `json:"max-fails"`
+	MaxFails *int `json:"max-fails,omitempty"`
 	// The maximum number of simultaneous active connections to an upstream server. By default there is no limit. Note: if keepalive connections are enabled, the total number of active and idle keepalive connections to an upstream server may exceed the max_conns value.
-	MaxConns *int `json:"max-conns"`
+	MaxConns *int `json:"max-conns,omitempty"`
 	// Configures the cache for connections to upstream servers. The value 0 disables the cache. The default is set in the keepalive ConfigMap key.
-	Keepalive *int `json:"keepalive"`
+	Keepalive *int `json:"keepalive,omitempty"`
 	// The timeout for establishing a connection with an upstream server. The default is specified in the proxy-connect-timeout ConfigMap key.
-	ProxyConnectTimeout string `json:"connect-timeout"`
+	ProxyConnectTimeout string `json:"connect-timeout,omitempty"`
 	// The timeout for reading a response from an upstream server. The default is specified in the proxy-read-timeout ConfigMap key.
-	ProxyReadTimeout string `json:"read-timeout"`
+	ProxyReadTimeout string `json:"read-timeout,omitempty"`
 	// The timeout for transmitting a request to an upstream server. The default is specified in the proxy-send-timeout ConfigMap key.
-	ProxySendTimeout string `json:"send-timeout"`
+	ProxySendTimeout string `json:"send-timeout,omitempty"`
 	// Specifies in which cases a request should be passed to the next upstream server. The default is error timeout.
-	ProxyNextUpstream string `json:"next-upstream"`
+	ProxyNextUpstream string `json:"next-upstream,omitempty"`
 	// The time during which a request can be passed to the next upstream server. The 0 value turns off the time limit. The default is 0.
-	ProxyNextUpstreamTimeout string `json:"next-upstream-timeout"`
+	ProxyNextUpstreamTimeout string `json:"next-upstream-timeout,omitempty"`
 	// The number of possible tries for passing a request to the next upstream server. The 0 value turns off this limit. The default is 0.
-	ProxyNextUpstreamTries int `json:"next-upstream-tries"`
+	ProxyNextUpstreamTries int `json:"next-upstream-tries,omitempty"`
 	// Enables buffering of responses from the upstream server.  The default is set in the proxy-buffering ConfigMap key.
-	ProxyBuffering *bool `json:"buffering"`
+	ProxyBuffering *bool `json:"buffering,omitempty"`
 	// Configures the buffers used for reading a response from the upstream server for a single connection.
-	ProxyBuffers *UpstreamBuffers `json:"buffers"`
+	ProxyBuffers *UpstreamBuffers `json:"buffers,omitempty"`
 	// Sets the size of the buffer used for reading the first part of a response received from the upstream server. The default is set in the proxy-buffer-size ConfigMap key.
-	ProxyBufferSize string `json:"buffer-size"`
+	ProxyBufferSize string `json:"buffer-size,omitempty"`
 	// Sets the size of the buffers used for reading a response from the upstream server when the proxy_buffering is enabled. The default is set in the proxy-busy-buffers-size ConfigMap key.'
-	ProxyBusyBuffersSize string `json:"busy-buffers-size"`
+	ProxyBusyBuffersSize string `json:"busy-buffers-size,omitempty"`
 	// Sets the maximum allowed size of the client request body. The default is set in the client-max-body-size ConfigMap key.
-	ClientMaxBodySize string `json:"client-max-body-size"`
+	ClientMaxBodySize string `json:"client-max-body-size,omitempty"`
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:validation:Pattern=`^\d+[kKmM]?$`
 	// ClientBodyBufferSize sets the size of the buffer used for reading the client request body. Must be specified as a number followed by:
 	// 'k' for kilobytes or 'm' for megabytes.
 	// Examples: "10m" or "512k".
-	ClientBodyBufferSize string `json:"client-body-buffer-size"`
+	ClientBodyBufferSize string `json:"client-body-buffer-size,omitempty"`
 	// The TLS configuration for the Upstream.
-	TLS UpstreamTLS `json:"tls"`
+	TLS UpstreamTLS `json:"tls,omitempty"`
 	// The health check configuration for the Upstream. Note: this feature is supported only in NGINX Plus.
-	HealthCheck *HealthCheck `json:"healthCheck"`
+	HealthCheck *HealthCheck `json:"healthCheck,omitempty"`
 	// The slow start allows an upstream server to gradually recover its weight from 0 to its nominal value after it has been recovered or became available or when the server becomes available after a period of time it was considered unavailable. By default, the slow start is disabled. Note: The parameter cannot be used along with the random, hash or ip_hash load balancing methods and will be ignored.
-	SlowStart string `json:"slow-start"`
+	SlowStart string `json:"slow-start,omitempty"`
 	// Configures a queue for an upstream. A client request will be placed into the queue if an upstream server cannot be selected immediately while processing the request. By default, no queue is configured. Note: this feature is supported only in NGINX Plus.
-	Queue *UpstreamQueue `json:"queue"`
+	Queue *UpstreamQueue `json:"queue,omitempty"`
 	// The SessionCookie field configures session persistence which allows requests from the same client to be passed to the same upstream server. The information about the designated upstream server is passed in a session cookie generated by NGINX Plus.
-	SessionCookie *SessionCookie `json:"sessionCookie"`
+	SessionCookie *SessionCookie `json:"sessionCookie,omitempty"`
 	// Enables using the Cluster IP and port of the service instead of the default behavior of using the IP and port of the pods. When this field is enabled, the fields that configure NGINX behavior related to multiple upstream servers (like lb-method and next-upstream) will have no effect, as NGINX Ingress Controller will configure NGINX with only one upstream server that will match the service Cluster IP.
-	UseClusterIP bool `json:"use-cluster-ip"`
+	UseClusterIP bool `json:"use-cluster-ip,omitempty"`
 	// Allows proxying requests with NTLM Authentication. In order for NTLM authentication to work, it is necessary to enable keepalive connections to upstream servers using the keepalive field. Note: this feature is supported only in NGINX Plus.
-	NTLM bool `json:"ntlm"`
+	NTLM bool `json:"ntlm,omitempty"`
 	// The type of the upstream. Supported values are http and grpc. The default is http. For gRPC, it is necessary to enable HTTP/2 in the ConfigMap and configure TLS termination in the VirtualServer.
-	Type string `json:"type"`
+	Type string `json:"type,omitempty"`
 	// The name of the backup service of type ExternalName. This will be used when the primary servers are unavailable. Note: The parameter cannot be used along with the random, hash or ip_hash load balancing methods.
-	Backup string `json:"backup"`
+	Backup string `json:"backup,omitempty"`
 	// The port of the backup service. The backup port is required if the backup service name is provided. The port must fall into the range 1..65535.
-	BackupPort *uint16 `json:"backupPort"`
+	BackupPort *uint16 `json:"backupPort,omitempty"`
 }
 
 // UpstreamBuffers defines Buffer Configuration for an Upstream.
@@ -269,36 +269,36 @@ type SessionCookie struct {
 
 // Route defines a route.
 type Route struct {
-	// The path of the route. NGINX will match it against the URI of a request. Possible values are: a prefix ( / , /path ), an exact match ( =/exact/match ), a case insensitive regular expression ( ~*^/Bar.*\.jpg ) or a case sensitive regular expression ( ~^/foo.*\.jpg ). In the case of a prefix (must start with / ) or an exact match (must start with = ), the path must not include any whitespace characters, { , } or ;. In the case of the regex matches, all double quotes " must be escaped and the match can’t end in an unescaped backslash \. The path must be unique among the paths of all routes of the VirtualServer. Check the location directive for more information.
+	// The path of the route. NGINX will match it against the URI of a request. Possible values are: a prefix ( / , /path ), an exact match ( =/exact/match ), a case insensitive regular expression ( ~*^/Bar.*\.jpg ) or a case sensitive regular expression ( ~^/foo.*\.jpg ). In the case of a prefix (must start with / ) or an exact match (must start with = ), the path must not include any whitespace characters, { , } or ;. In the case of the regex matches, all double quotes " must be escaped and the match can't end in an unescaped backslash \. The path must be unique among the paths of all routes of the VirtualServer. Check the location directive for more information.
 	Path string `json:"path"`
 	// A list of policies. The policies override the policies of the same type defined in the spec of the VirtualServer.
-	Policies []PolicyReference `json:"policies"`
+	Policies []PolicyReference `json:"policies,omitempty"`
 	// The name of a VirtualServerRoute resource that defines this route. If the VirtualServerRoute belongs to a different namespace than the VirtualServer, you need to include the namespace. For example, tea-namespace/tea.
-	Route string `json:"route"`
+	Route string `json:"route,omitempty"`
 	// The default action to perform for a request.
-	Action *Action `json:"action"`
+	Action *Action `json:"action,omitempty"`
 	// The default splits configuration for traffic splitting. Must include at least 2 splits.
-	Splits []Split `json:"splits"`
+	Splits []Split `json:"splits,omitempty"`
 	// The matching rules for advanced content-based routing. Requires the default Action or Splits. Unmatched requests will be handled by the default Action or Splits.
-	Matches []Match `json:"matches"`
+	Matches []Match `json:"matches,omitempty"`
 	// The custom responses for error codes. NGINX will use those responses instead of returning the error responses from the upstream servers or the default responses generated by NGINX. A custom response can be a redirect or a canned response. For example, a redirect to another URL if an upstream server responded with a 404 status code.
-	ErrorPages []ErrorPage `json:"errorPages"`
+	ErrorPages []ErrorPage `json:"errorPages,omitempty"`
 	// Sets a custom snippet in the location context. Overrides the location-snippets ConfigMap key.
-	LocationSnippets string `json:"location-snippets"`
+	LocationSnippets string `json:"location-snippets,omitempty"`
 	// A reference to a DosProtectedResource, setting this enables DOS protection of the VirtualServer route.
-	Dos string `json:"dos"`
+	Dos string `json:"dos,omitempty"`
 }
 
 // Action defines an action.
 type Action struct {
 	// Passes requests to an upstream. The upstream with that name must be defined in the resource.
-	Pass string `json:"pass"`
+	Pass string `json:"pass,omitempty"`
 	// Redirects requests to a provided URL.
-	Redirect *ActionRedirect `json:"redirect"`
+	Redirect *ActionRedirect `json:"redirect,omitempty"`
 	// Returns a preconfigured response.
-	Return *ActionReturn `json:"return"`
+	Return *ActionReturn `json:"return,omitempty"`
 	// Passes requests to an upstream with the ability to modify the request/response (for example, rewrite the URI or modify the headers).
-	Proxy *ActionProxy `json:"proxy"`
+	Proxy *ActionProxy `json:"proxy,omitempty"`
 }
 
 // ActionRedirect defines a redirect in an Action.
@@ -427,9 +427,9 @@ type TLSRedirect struct {
 	// Enables a TLS redirect for a VirtualServer. The default is False.
 	Enable bool `json:"enable"`
 	// The status code of a redirect. The allowed values are: 301, 302, 307 or 308. The default is 301.
-	Code *int `json:"code"`
+	Code *int `json:"code,omitempty"`
 	// The attribute of a request that NGINX will evaluate to send a redirect. The allowed values are scheme (the scheme of the request) or x-forwarded-proto (the X-Forwarded-Proto header of the request). The default is scheme.
-	BasedOn string `json:"basedOn"`
+	BasedOn string `json:"basedOn,omitempty"`
 }
 
 // CertManager defines a cert manager config for a TLS.
